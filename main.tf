@@ -85,7 +85,7 @@ sudo systemctl enable --now docker
 echo “Adding ec2-user to Docker Group”
 sudo usermod -aG docker ec2-user
 echo “Fetching Docker Compose”
-sudo curl -L https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/v${var.docker_compose_version}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 echo “Modifying permission for Docker Compose”
 sudo chmod +x /usr/local/bin/docker-compose
 echo “Creating softlink for Docker Compose”
@@ -95,14 +95,14 @@ sudo docker-compose --version
 mkdir -p /opt/sentry
 cd /opt/sentry
 echo “Fetching Sentry Package”
-sudo curl -LJO https://github.com/getsentry/onpremise/archive/22.6.0.tar.gz
-sudo tar -zxvf self-hosted-22.6.0.tar.gz
-rm self-hosted-22.6.0.tar.gz
-cd self-hosted-22.6.0
+sudo curl -LJO https://github.com/getsentry/onpremise/archive/${var.sentry_version}.tar.gz
+sudo tar -zxvf self-hosted-${var.sentry_version}.tar.gz
+rm self-hosted-${var.sentry_version}.tar.gz
+cd self-hosted-${var.sentry_version}
 echo "applying sentry config"
 cat << XXX >> sentry/config.example.yml
-system.admin-email: "dev@consultantconnect.org.uk"
-system.url-prefix: "https://sentry.consultantconnect.org.uk"
+system.admin-email: "${var.admin_email}"
+system.url-prefix: "${var.url_prefix}"
 XXX
 cat << YYY >> sentry/sentry.conf.example.py
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -112,6 +112,11 @@ YYY
 cat << ZZZ >> .env
 SENTRY_MAIL_HOST=email.eu-west-2.amazonaws.com
 ZZZ
+cat << AAA >> geoip/GeoIP.conf
+AccountID ${var.geoip_accountid}
+LicenseKey ${var.geoip_license_key}
+EditionIDs GeoLite2-City
+AAA
 echo “Installing Sentry”
 sudo ./install.sh --no-user-prompt
 echo “Starting Sentry”

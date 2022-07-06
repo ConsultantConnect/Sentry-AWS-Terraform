@@ -1,5 +1,0 @@
-subnet1 = "subnet-1ad75261"
-subnet2 = "subnet-eb1ed782"
-vpc_id = "vpc-c7e377ae"
-region = "eu-west-2"
-cert_arn = "arn:aws:acm:eu-west-2:401524530582:certificate/7718ee4c-713e-4ed5-89de-f271d0a45bb4"
