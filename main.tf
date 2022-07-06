@@ -99,6 +99,19 @@ sudo curl -LJO https://github.com/getsentry/onpremise/archive/22.6.0.tar.gz
 sudo tar -zxvf self-hosted-22.6.0.tar.gz
 rm self-hosted-22.6.0.tar.gz
 cd self-hosted-22.6.0
+echo "applying sentry config"
+cat << XXX >> sentry/config.example.yml
+system.admin-email: "dev@consultantconnect.org.uk"
+system.url-prefix: "https://sentry.consultantconnect.org.uk"
+XXX
+cat << YYY >> sentry/sentry.conf.example.py
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+YYY
+cat << ZZZ >> .env
+SENTRY_MAIL_HOST=email.eu-west-2.amazonaws.com
+ZZZ
 echo “Installing Sentry”
 sudo ./install.sh --no-user-prompt
 echo “Starting Sentry”
