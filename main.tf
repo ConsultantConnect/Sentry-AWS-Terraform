@@ -92,12 +92,16 @@ echo “Creating softlink for Docker Compose”
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 echo “Checking Docker Compose Version”
 sudo docker-compose --version
+mkdir -p /opt/sentry
+cd /opt/sentry
 echo “Fetching Sentry Package”
 sudo curl -LJO https://github.com/getsentry/onpremise/archive/22.6.0.tar.gz
 sudo tar -zxvf self-hosted-22.6.0.tar.gz
+rm self-hosted-22.6.0.tar.gz
 cd self-hosted-22.6.0
 echo “Installing Sentry”
 sudo ./install.sh --no-user-prompt
+echo “Starting Sentry”
 sudo docker-compose up -d
 EOF
   tags = {
@@ -146,5 +150,33 @@ resource "aws_alb_listener" "Sentry-alb-https" {
   default_action {
     target_group_arn = aws_alb_target_group.Sentry-alb-https.arn
     type             = "forward"
+  }
+}
+
+resource "aws_lb_listener" "Sentry-alb-http" {
+  load_balancer_arn = aws_alb.Sentry-alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_route53_record" "sentry_route53_record" {
+  zone_id = var.rt53_zone_id
+  name    = var.rt_53_domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_alb.Sentry-alb.dns_name
+    zone_id                = aws_alb.Sentry-alb.zone_id
+    evaluate_target_health = true
   }
 }

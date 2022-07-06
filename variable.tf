@@ -13,7 +13,7 @@ variable "aws-secret-key" {
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = ""
+  default     = "eu-west-2"
 }
 
 variable "vpc_id" {
@@ -38,4 +38,16 @@ variable "cert_arn" {
   description = "ARN for ACM certificate"
   type        = string
   default     = ""
+}
+
+variable "rt53_zone_id" {
+  description = "Route 53 Zone ID"
+  type        = string
+  default     = "Z2EVGDY1W45NH9"
+}
+
+variable "rt_53_domain_name" {
+  description = "Route 53 Domain Name"
+  type        = string
+  default     = "sentry.consultantconnect.org.uk"
 }
