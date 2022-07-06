@@ -92,11 +92,11 @@ echo “Creating softlink for Docker Compose”
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 echo “Checking Docker Compose Version”
 sudo docker-compose --version
-mkdir -p /opt/sentry
-cd /opt/sentry
+mkdir -p /opt/sentry/current
+cd /opt/sentry/current
 echo “Fetching Sentry Package”
 sudo curl -LJO https://github.com/getsentry/onpremise/archive/${var.sentry_version}.tar.gz
-sudo tar -zxvf self-hosted-${var.sentry_version}.tar.gz
+sudo tar -zxvf self-hosted-${var.sentry_version}.tar.gz -C .
 rm self-hosted-${var.sentry_version}.tar.gz
 cd self-hosted-${var.sentry_version}
 echo "applying sentry config"
