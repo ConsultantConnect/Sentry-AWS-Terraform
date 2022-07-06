@@ -70,26 +70,22 @@ resource "aws_security_group" "Sentry_EC2" {
 }
 
 resource "aws_instance" "SentryEC2Server" {
-  ami             = "ami-096fda3c22c1c990a"
-  instance_type   = "t2.medium"
+  ami             = "ami-078a289ddf4b09ae0"
+  instance_type   = "t3a.xlarge"
   key_name        = aws_key_pair.Sentry_key.key_name
   security_groups = [aws_security_group.Sentry_EC2.name]
   user_data       = <<-EOF
 #!/bin/bash
 echo “Updating Packages”
 sudo yum update -y
-echo “Adding Docker CE Repo”
-sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-echo “Modifying Docker Repo”
-sudo sed -i s/7/8/g /etc/yum.repos.d/docker-ce.repo
 echo “Installing Docker”
-sudo yum install docker-ce -y
+sudo yum install docker -y
 echo “Starting Docker”
 sudo systemctl enable --now docker
 echo “Adding ec2-user to Docker Group”
 sudo usermod -aG docker ec2-user
 echo “Fetching Docker Compose”
-sudo curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/v2.6.1/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 echo “Modifying permission for Docker Compose”
 sudo chmod +x /usr/local/bin/docker-compose
 echo “Creating softlink for Docker Compose”
@@ -97,23 +93,16 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 echo “Checking Docker Compose Version”
 sudo docker-compose --version
 echo “Fetching Sentry Package”
-sudo curl -LJO https://github.com/getsentry/onpremise/archive/20.12.1.tar.gz
-sudo tar -zxvf onpremise-20.12.1.tar.gz 
-cd onpremise-20.12.1
-echo “Exporting Undocumented Variable”
-export CI=1
+sudo curl -LJO https://github.com/getsentry/onpremise/archive/22.6.0.tar.gz
+sudo tar -zxvf self-hosted-22.6.0.tar.gz
+cd self-hosted-22.6.0
 echo “Installing Sentry”
-sudo ./install.sh
-sudo docker-compose up -d 
+sudo ./install.sh --no-user-prompt
+sudo docker-compose up -d
 EOF
   tags = {
     Name = "SentryEC2Server"
   }
-}
-resource "aws_iam_server_certificate" "Sentry_ALB_Certificate" {
-  name             = "Sentry_ALB_Certificate"
-  certificate_body = file("public.pem")
-  private_key      = file("private.pem")
 }
 
 resource "aws_alb" "Sentry-alb" {
@@ -152,7 +141,7 @@ resource "aws_alb_listener" "Sentry-alb-https" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_iam_server_certificate.Sentry_ALB_Certificate.arn
+  certificate_arn   = var.cert_arn
 
   default_action {
     target_group_arn = aws_alb_target_group.Sentry-alb-https.arn

@@ -33,3 +33,9 @@ variable "subnet2" {
   type        = string
   default     = ""
 }
+
+variable "cert_arn" {
+  description = "ARN for ACM certificate"
+  type        = string
+  default     = ""
+}
