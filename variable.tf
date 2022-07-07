@@ -87,3 +87,15 @@ variable "docker_compose_version" {
   type        = string
   default     = "2.6.1"
 }
+
+variable "google_client_id" {
+  description = "Google OAuth2 client ID"
+  type        = string
+  default     = ""
+}
+
+variable "google_client_secret" {
+  description = "Google OAuth2 client secret"
+  type        = string
+  default     = ""
+}

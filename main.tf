@@ -103,6 +103,8 @@ echo "applying sentry config"
 cat << XXX >> sentry/config.example.yml
 system.admin-email: "${var.admin_email}"
 system.url-prefix: "${var.url_prefix}"
+auth-google.client-id: "${var.google_client_id}"
+auth-google.client-secret: "${var.google_client_secret}"
 XXX
 cat << YYY >> sentry/sentry.conf.example.py
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
