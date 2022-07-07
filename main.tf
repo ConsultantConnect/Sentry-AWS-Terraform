@@ -173,7 +173,7 @@ resource "aws_alb_listener" "Sentry-alb-https" {
   load_balancer_arn = aws_alb.Sentry-alb.arn
   port              = "443"
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-FS-1-2-Res-2020-10"
   certificate_arn   = var.cert_arn
 
   default_action {
