@@ -105,6 +105,15 @@ system.admin-email: "${var.admin_email}"
 system.url-prefix: "${var.url_prefix}"
 auth-google.client-id: "${var.google_client_id}"
 auth-google.client-secret: "${var.google_client_secret}"
+github-app.id: ${var.github_app_id}
+github-app.name: "${var.github_app_name}"
+github-app.client-id: "${var.github_client_id}"
+github-app.client-secret: ${var.github_api_secret}
+github-app.webhook-secret: "${var.github_client_id}"
+github-app.private-key: |
+  ${var.github_private_key}
+github-login.client-id: "${var.github_client_id}"
+github-login.require-verified-email: true
 XXX
 cat << YYY >> sentry/sentry.conf.example.py
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -99,3 +99,39 @@ variable "google_client_secret" {
   type        = string
   default     = ""
 }
+
+variable "github_app_id" {
+  description = "GitHub app ID"
+  type        = number
+  default     = 12345
+}
+
+variable "github_api_secret" {
+  description = "Github API secret"
+  type        = string
+  default     = ""
+}
+
+variable "github_app_name" {
+  description = "Github app name"
+  type        = string
+  default     = "ConsultantConnect-Sentry"
+}
+
+variable "github_client_id" {
+  description = "Github client ID"
+  type        = string
+  default     = ""
+}
+
+variable "github_private_key" {
+  description = "Github private key"
+  type        = string
+  default     = ""
+}
+
+variable "github_webhook_secret" {
+  description = "Github webhook secret"
+  type        = string
+  default     = ""
+}
