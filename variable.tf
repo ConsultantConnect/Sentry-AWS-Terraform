@@ -135,3 +135,9 @@ variable "github_webhook_secret" {
   type        = string
   default     = ""
 }
+
+variable "restore_backups" {
+  description = "Restore from backups after creating instance"
+  type        = bool
+  default     = true
+}

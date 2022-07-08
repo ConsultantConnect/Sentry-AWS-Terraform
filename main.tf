@@ -4,6 +4,55 @@ provider "aws" {
   region     = var.region
 }
 
+resource "aws_iam_role" "sentry_iam_role" {
+  name               = "sentry_iam_role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_instance_profile" "sentry_instance_profile" {
+  name  = "sentry_instance_profile"
+  role = "sentry_iam_role"
+}
+
+resource "aws_iam_role_policy" "sentry_iam_role_policy" {
+  name   = "sentry_iam_role_policy"
+  role   = aws_iam_role.sentry_iam_role.id
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::cc-sentry-backups"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject"
+      ],
+      "Resource": ["arn:aws:s3:::cc-sentry-backups/*"]
+    }
+  ]
+}
+EOF
+}
+
 resource "tls_private_key" "Sentry_private_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -74,6 +123,7 @@ resource "aws_instance" "SentryEC2Server" {
   instance_type   = "t3a.xlarge"
   key_name        = aws_key_pair.Sentry_key.key_name
   security_groups = [aws_security_group.Sentry_EC2.name]
+  iam_instance_profile = "${aws_iam_instance_profile.sentry_instance_profile.id}"
   user_data       = <<-EOF
 #!/bin/bash
 echo “Updating Packages”
@@ -140,29 +190,34 @@ do
     docker run -v "\$${i}":/volume --rm --log-driver none loomchild/volume-backup backup - > /opt/sentry/backup/"\$${i}".tar.bz2
 done
 docker-compose up -d
-for i in "\$${SENTRY_VOLUMES[@]}"
-do
-    # upload to S3
-    # delete archive
-done
+aws s3 cp /opt/sentry/backup s3://cc-sentry-backups --recursive --exclude "*" --include "*.tar.bz2"
+rm -rf *.tar.bz2
 BBB
 sudo chmod +x /opt/sentry/backup/backup.sh
 cat << CCC >> /opt/sentry/backup/restore_backups.sh
 #!/bin/bash
 SENTRY_VOLUMES=("sentry-data" "sentry-postgres" "sentry-redis" "sentry-zookeeper" "sentry-kafka" "sentry-clickhouse" "sentry-symbolicator")
+aws s3 cp s3://cc-sentry-backups /opt/sentry/backup --recursive --exclude "*" --include "*.tar.bz2"
 cd /opt/sentry/current/self-hosted-${var.sentry_version}
 docker-compose down
 for i in "\$${SENTRY_VOLUMES[@]}"
 do
     docker run -i -v "\$${i}":/volume --rm loomchild/volume-backup restore -f - < /opt/sentry/backup/"\$${i}".tar.bz2
 done
+rm -rf *.tar.bz2
 docker-compose up -d
 CCC
 sudo chmod +x /opt/sentry/backup/restore_backups.sh
 echo “Installing Sentry”
 sudo ./install.sh --no-user-prompt
-echo “Starting Sentry”
-sudo docker-compose up -d
+if ${var.restore_backups}
+then
+  echo "Restoring Backups"
+  sudo /opt/sentry/backup/restore_backups.sh
+else
+  echo “Starting Sentry”
+  sudo docker-compose up -d
+fi
 EOF
   tags = {
     Name = "SentryEC2Server"
