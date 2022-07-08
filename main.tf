@@ -207,6 +207,11 @@ done
 rm -rf *.tar.bz2
 docker-compose up -d
 CCC
+sudo systemctl start crond
+sudo systemctl enable crond
+echo "0 3 * * * sudo /opt/sentry/backup/backup.sh" >> mycron
+crontab mycron
+rm mycron
 sudo chmod +x /opt/sentry/backup/restore_backups.sh
 echo “Installing Sentry”
 sudo ./install.sh --no-user-prompt
