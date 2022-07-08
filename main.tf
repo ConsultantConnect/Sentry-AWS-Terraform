@@ -84,6 +84,7 @@ echo “Starting Docker”
 sudo systemctl enable --now docker
 echo “Adding ec2-user to Docker Group”
 sudo usermod -aG docker ec2-user
+docker pull loomchild/volume-backup
 echo “Fetching Docker Compose”
 sudo curl -L https://github.com/docker/compose/releases/download/v${var.docker_compose_version}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 echo “Modifying permission for Docker Compose”
@@ -93,6 +94,7 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 echo “Checking Docker Compose Version”
 sudo docker-compose --version
 mkdir -p /opt/sentry/current
+mkdir -p /opt/sentry/backup
 cd /opt/sentry/current
 echo “Fetching Sentry Package”
 sudo curl -LJO https://github.com/getsentry/onpremise/archive/${var.sentry_version}.tar.gz
@@ -128,6 +130,35 @@ AccountID ${var.geoip_accountid}
 LicenseKey ${var.geoip_license_key}
 EditionIDs GeoLite2-City
 AAA
+cat << BBB >> /opt/sentry/backup/backup.sh
+#!/bin/bash
+SENTRY_VOLUMES=("sentry-data" "sentry-postgres" "sentry-redis" "sentry-zookeeper" "sentry-kafka" "sentry-clickhouse" "sentry-symbolicator")
+cd /opt/sentry/current/self-hosted-${var.sentry_version}
+docker-compose down
+for i in "\$${SENTRY_VOLUMES[@]}"
+do
+    docker run -v "\$${i}":/volume --rm --log-driver none loomchild/volume-backup backup - > /opt/sentry/backup/"\$${i}".tar.bz2
+done
+docker-compose up -d
+for i in "\$${SENTRY_VOLUMES[@]}"
+do
+    # upload to S3
+    # delete archive
+done
+BBB
+sudo chmod +x /opt/sentry/backup/backup.sh
+cat << CCC >> /opt/sentry/backup/restore_backups.sh
+#!/bin/bash
+SENTRY_VOLUMES=("sentry-data" "sentry-postgres" "sentry-redis" "sentry-zookeeper" "sentry-kafka" "sentry-clickhouse" "sentry-symbolicator")
+cd /opt/sentry/current/self-hosted-${var.sentry_version}
+docker-compose down
+for i in "\$${SENTRY_VOLUMES[@]}"
+do
+    docker run -i -v "\$${i}":/volume --rm loomchild/volume-backup restore -f - < /opt/sentry/backup/"\$${i}".tar.bz2
+done
+docker-compose up -d
+CCC
+sudo chmod +x /opt/sentry/backup/restore_backups.sh
 echo “Installing Sentry”
 sudo ./install.sh --no-user-prompt
 echo “Starting Sentry”
