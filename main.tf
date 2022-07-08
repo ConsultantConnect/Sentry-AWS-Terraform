@@ -166,6 +166,14 @@ github-app.private-key: |
   ${var.github_private_key}
 github-login.client-id: "${var.github_client_id}"
 github-login.require-verified-email: true
+mail.host: "${var.smtp_host}"
+mail.port: ${var.smtp_port}
+mail.username: "${var.smtp_user}"
+mail.password: "${var.smtp_password}"
+mail.from: "${var.smtp_from}"
+mail.list-namespace: "${var.smtp_namespace}"
+mail.use-tls: true
+mail.use-ssl: false
 XXX
 cat << YYY >> sentry/sentry.conf.example.py
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

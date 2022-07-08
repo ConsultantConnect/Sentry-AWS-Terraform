@@ -141,3 +141,39 @@ variable "restore_backups" {
   type        = bool
   default     = true
 }
+
+variable "smtp_password" {
+  description = "SMTP server password"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_user" {
+  description = "SMTP server user"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "SMTP server port"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_host" {
+  description = "SMTP server hostname"
+  type        = string
+  default     = "email-smtp.eu-west-2.amazonaws.com"
+}
+
+variable "smtp_from" {
+  description = "Sender name/address"
+  type        = string
+  default     = "Sentry <noreply@consultantconnect.org.uk>"
+}
+
+variable "smtp_namespace" {
+  description = "mailing list namespace for emails sent by this Sentry server"
+  type        = string
+  default     = "consultantconnect.org.uk"
+}
