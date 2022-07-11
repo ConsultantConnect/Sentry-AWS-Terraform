@@ -177,3 +177,21 @@ variable "smtp_namespace" {
   type        = string
   default     = "consultantconnect.org.uk"
 }
+
+variable "slack_client_id" {
+  description = "Slack client ID"
+  type        = string
+  default     = ""
+}
+
+variable "slack_client_secret" {
+  description = "Slack client secret"
+  type        = string
+  default     = ""
+}
+
+variable "slack_signing_secret" {
+  description = "Slash signing secret"
+  type        = string
+  default     = ""
+}

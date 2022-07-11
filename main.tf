@@ -174,6 +174,9 @@ mail.from: "${var.smtp_from}"
 mail.list-namespace: "${var.smtp_namespace}"
 mail.use-tls: true
 mail.use-ssl: false
+slack.client-id: "${var.slack_client_id}"
+slack.client-secret: "${var.slack_client_secret}"
+slack.signing-secret: "${var.slack_signing_secret}"
 XXX
 cat << YYY >> sentry/sentry.conf.example.py
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
