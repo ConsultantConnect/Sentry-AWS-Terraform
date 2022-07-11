@@ -198,24 +198,26 @@ cd /opt/sentry/current/self-hosted-${var.sentry_version}
 docker-compose down
 for i in "\$${SENTRY_VOLUMES[@]}"
 do
-    docker run -v "\$${i}":/volume --rm --log-driver none loomchild/volume-backup backup - > /opt/sentry/backup/"\$${i}".tar.bz2
+    docker run -v "\$${i}":/volume --rm --log-driver none loomchild/volume-backup backup - > /home/ec2-user/\$${i}.tar.bz2
 done
 docker-compose up -d
-aws s3 cp /opt/sentry/backup s3://cc-sentry-backups --recursive --exclude "*" --include "*.tar.bz2"
+aws s3 cp /home/ec2-user/ s3://cc-sentry-backups --recursive --exclude "*" --include "*.tar.bz2"
 sudo rm -rf *.tar.bz2
 BBB
 sudo chmod +x /opt/sentry/backup/backup.sh
 cat << CCC >> /opt/sentry/backup/restore_backups.sh
 #!/bin/bash
+cd /home/ec2-user/
+sudo rm -rf *.tar.bz2
 SENTRY_VOLUMES=("sentry-data" "sentry-postgres" "sentry-redis" "sentry-zookeeper" "sentry-kafka" "sentry-clickhouse" "sentry-symbolicator")
-aws s3 cp s3://cc-sentry-backups /opt/sentry/backup --recursive --exclude "*" --include "*.tar.bz2"
+sudo aws s3 cp s3://cc-sentry-backups /home/ec2-user --recursive --exclude "*" --include "*.tar.bz2"
 cd /opt/sentry/current/self-hosted-${var.sentry_version}
 docker-compose down
 for i in "\$${SENTRY_VOLUMES[@]}"
 do
-    docker run -i -v "\$${i}":/volume --rm loomchild/volume-backup restore -f - < /opt/sentry/backup/"\$${i}".tar.bz2
+    docker run -i -v "\$${i}":/volume --rm loomchild/volume-backup restore -f - < /home/ec2-user/\$${i}.tar.bz2
 done
-sudo rm -rf *.tar.bz2
+sudo rm -rf /home/ec2-user/*.tar.bz2
 docker-compose up -d
 CCC
 sudo systemctl start crond
