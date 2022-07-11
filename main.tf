@@ -161,7 +161,7 @@ github-app.id: ${var.github_app_id}
 github-app.name: "${var.github_app_name}"
 github-app.client-id: "${var.github_client_id}"
 github-app.client-secret: ${var.github_api_secret}
-github-app.webhook-secret: "${var.github_client_id}"
+github-app.webhook-secret: "${var.github_webhook_secret}"
 github-app.private-key: |
   ${var.github_private_key}
 github-login.client-id: "${var.github_client_id}"
@@ -202,7 +202,7 @@ do
 done
 docker-compose up -d
 aws s3 cp /opt/sentry/backup s3://cc-sentry-backups --recursive --exclude "*" --include "*.tar.bz2"
-rm -rf *.tar.bz2
+sudo rm -rf *.tar.bz2
 BBB
 sudo chmod +x /opt/sentry/backup/backup.sh
 cat << CCC >> /opt/sentry/backup/restore_backups.sh
@@ -215,7 +215,7 @@ for i in "\$${SENTRY_VOLUMES[@]}"
 do
     docker run -i -v "\$${i}":/volume --rm loomchild/volume-backup restore -f - < /opt/sentry/backup/"\$${i}".tar.bz2
 done
-rm -rf *.tar.bz2
+sudo rm -rf *.tar.bz2
 docker-compose up -d
 CCC
 sudo systemctl start crond
